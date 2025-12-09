@@ -33,3 +33,28 @@ class Measurement(db.Model):
             "temperature": self.temperature,
             "timestamp": self.timestamp.isoformat()
         }
+    
+def evaluate_status(m):
+    status = "Normal"
+    issues = []
+
+    # SpO2 vurdering
+    if m.spo2 < 92:
+        status = "Kritisk"
+        issues.append("Meget lav iltmætning")
+    elif m.spo2 < 95:
+        status = "Advarsel"
+        issues.append("Lav SpO₂")
+
+    # Puls vurdering
+    if m.bpm < 50 or m.bpm > 120:
+        status = "Kritisk"
+        issues.append("Unormal puls")
+
+    # Temperatur vurdering
+    if m.temperature > 38.0:
+        if status != "Kritisk":
+            status = "Advarsel"
+        issues.append("Feber")
+
+    return status, issues
