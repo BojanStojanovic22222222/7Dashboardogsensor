@@ -58,3 +58,29 @@ def evaluate_status(m):
         issues.append("Feber")
 
     return status, issues
+
+#vores main route "/" til dashboardet 
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+@app.route("/api/data", methods=["POST"])
+def receive_data():
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "No JSON"}), 400
+
+    m = Measurement(
+        patient_id=data.get("patient_id", 1),
+        bpm=int(data["bpm"]),
+        spo2=int(data["spo2"]),
+        temperature=float(data["temperature"]),
+        timestamp=datetime.utcfromtimestamp(
+            data.get("timestamp", datetime.utcnow().timestamp())
+        )
+    )
+    db.session.add(m)
+    db.session.commit()
+
+    return jsonify({"status": "OK"}), 200
