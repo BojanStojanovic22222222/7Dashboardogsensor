@@ -84,3 +84,51 @@ def receive_data():
     db.session.commit()
 
     return jsonify({"status": "OK"}), 200
+
+@app.route("/api/history")
+def history():
+    limit = int(request.args.get("limit", 100))
+    minutes = request.args.get("minutes")
+
+    query = Measurement.query.order_by(Measurement.timestamp.desc())
+
+    if minutes:
+        since = datetime.utcnow() - timedelta(minutes=int(minutes))
+        query = query.filter(Measurement.timestamp >= since)
+
+    measurements = query.limit(limit).all()
+    measurements = list(reversed(measurements))
+    return jsonify([m.to_dict() for m in measurements])
+
+#Tilføjse af Data fra api 
+
+@app.route("/api/stats")
+def stats():
+    """Returnerer gennemsnit, trends og seneste måling"""
+    last = Measurement.query.order_by(Measurement.timestamp.desc()).first()
+
+    if not last:
+        return jsonify({"error": "no data"}), 404
+
+    last_10_min = Measurement.query.filter(
+        Measurement.timestamp >= datetime.utcnow() - timedelta(minutes=10)
+    ).all()
+
+    if last_10_min:
+        avg_bpm = sum(m.bpm for m in last_10_min) / len(last_10_min)
+        avg_spo2 = sum(m.spo2 for m in last_10_min) / len(last_10_min)
+        avg_temp = sum(m.temperature for m in last_10_min) / len(last_10_min)
+    else:
+        avg_bpm = avg_spo2 = avg_temp = None
+
+    status, issues = evaluate_status(last)
+
+    return jsonify({
+        "last_measurement": last.to_dict(),
+        "avg_bpm_10min": avg_bpm,
+        "avg_spo2_10min": avg_spo2,
+        "avg_temp_10min": avg_temp,
+        "status": status,
+        "issues": issues
+    })
+
