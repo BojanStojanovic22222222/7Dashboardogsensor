@@ -13,3 +13,23 @@ else:
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
+
+# Database model for measurements værdier som vi bruger
+class Measurement(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, nullable=False)
+    bpm = db.Column(db.Integer, nullable=False)
+    spo2 = db.Column(db.Integer, nullable=False)
+    temperature = db.Column(db.Float, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+ 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "patient_id": self.patient_id,
+            "bpm": self.bpm,
+            "spo2": self.spo2,
+            "temperature": self.temperature,
+            "timestamp": self.timestamp.isoformat()
+        }
