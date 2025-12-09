@@ -5,11 +5,11 @@
     <title>IoMT Health Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    
+    <!-- Fonts & Chart.js -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    
+    <!-- LINK TIL EKSTERN CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
@@ -19,14 +19,14 @@
 
 <div class="container">
 
-    # status kort
+    <!-- STATUS CARD -->
     <div class="status-card card">
         <h2>Patientstatus</h2>
         <div id="statusText" class="status-text">Indlæser...</div>
         <ul id="issuesList"></ul>
     </div>
 
-    # måleværdier på kort
+    <!-- TRE HURTIGE VÆRDIER -->
     <div class="grid-3">
         <div class="card">
             <span class="label">Puls (BPM)</span>
@@ -44,7 +44,7 @@
         </div>
     </div>
 
-    ## graf med kontroller 
+    <!-- GRAF -->
     <div class="card" style="margin-top:35px;">
         <div class="graph-controls">
             <label>Graf-type:</label>
@@ -113,11 +113,11 @@ async function updateStatus() {
     });
 
     
-    // farvekoder 
-const className = stats.status.toLowerCase(); // information på kortet
+    // farvekoder
+const className = stats.status.toLowerCase(); // normal, advarsel, kritisk
 statusEl.className = "status-text " + className;
 
-// opdatering på kortet
+// opdater selve kortets farve
 document.querySelector(".status-card").className = "status-card card " + className;
 
 
