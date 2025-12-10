@@ -2,8 +2,13 @@ import os
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
+import re 
 
-app = flask(__name__)
+# Regex tiføjet til validering af nummmer input
+number_pattern = re.compile(r"^\d+(\.\d+)?$")
+
+
+app = Flask(__name__)
 
 # valg af database baseret på postgresql
 if os.getenv("TESTING") == "1":
@@ -71,6 +76,16 @@ def receive_data():
     if not data:
         return jsonify({"error": "No JSON"}), 400
 
+    # regex validering og udfylding af tjekliste
+    if not number_pattern.match(str(data.get("bpm", ""))):
+        return jsonify({"error": "Invalid BPM format"}), 400
+
+    if not number_pattern.match(str(data.get("spo2", ""))):
+        return jsonify({"error": "Invalid SpO2 format"}), 400
+
+    if not number_pattern.match(str(data.get("temperature", ""))):
+        return jsonify({"error": "Invalid temperature format"}), 400
+
     m = Measurement(
         patient_id=data.get("patient_id", 1),
         bpm=int(data["bpm"]),
@@ -80,10 +95,12 @@ def receive_data():
             data.get("timestamp", datetime.utcnow().timestamp())
         )
     )
+
     db.session.add(m)
     db.session.commit()
 
     return jsonify({"status": "OK"}), 200
+
 
 @app.route("/api/history")
 def history():
